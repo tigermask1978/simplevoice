@@ -1,9 +1,8 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use rubato::{FftFixedIn, Resampler};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 
-// cpal::Stream is !Send on Windows due to COM threading, but we only
-// access it from a single async task at a time via the AppState Mutex.
 struct SendStream(cpal::Stream);
 // SAFETY: We ensure the stream is only accessed while holding the Recorder mutex.
 unsafe impl Send for SendStream {}
@@ -11,23 +10,31 @@ unsafe impl Send for SendStream {}
 pub struct Recorder {
     samples: Arc<Mutex<Vec<f32>>>,
     stream: Option<SendStream>,
+    /// actual device config used for recording
+    device_config: Option<(u32, u16)>, // (sample_rate, channels)
 }
 
 impl Recorder {
     pub fn new() -> Self {
-        Self { samples: Arc::new(Mutex::new(Vec::new())), stream: None }
+        Self { samples: Arc::new(Mutex::new(Vec::new())), stream: None, device_config: None }
     }
 
     pub fn start(&mut self) -> anyhow::Result<()> {
         let host = cpal::default_host();
         let device = host.default_input_device().ok_or_else(|| anyhow::anyhow!("No input device"))?;
+        let supported = device.default_input_config()?;
+        let sr = supported.sample_rate().0;
+        let ch = supported.channels();
+        tracing::info!("Recording at {}Hz, {} channel(s)", sr, ch);
+
         let config = cpal::StreamConfig {
-            channels: 1,
-            sample_rate: cpal::SampleRate(16000),
+            channels: ch,
+            sample_rate: supported.sample_rate(),
             buffer_size: cpal::BufferSize::Default,
         };
 
         self.samples.lock().unwrap().clear();
+        self.device_config = Some((sr, ch));
         let samples = Arc::clone(&self.samples);
 
         let stream = device.build_input_stream(
@@ -43,10 +50,57 @@ impl Recorder {
         Ok(())
     }
 
+    /// Stop recording and return 16kHz mono f32 samples.
     pub fn stop(&mut self) -> Vec<f32> {
-        self.stream.take(); // drops stream, stops recording
-        std::mem::take(&mut *self.samples.lock().unwrap())
+        self.stream.take();
+        let raw = std::mem::take(&mut *self.samples.lock().unwrap());
+        let (sr, ch) = self.device_config.take().unwrap_or((16000, 1));
+        to_16k_mono(raw, sr, ch as usize)
     }
+}
+
+/// Convert interleaved multi-channel audio at `src_sr` Hz to 16kHz mono f32.
+fn to_16k_mono(raw: Vec<f32>, src_sr: u32, channels: usize) -> Vec<f32> {
+    // 1. Mix down to mono
+    let mono: Vec<f32> = if channels == 1 {
+        raw
+    } else {
+        raw.chunks_exact(channels)
+            .map(|frame| frame.iter().sum::<f32>() / channels as f32)
+            .collect()
+    };
+
+    const TARGET_SR: u32 = 16000;
+    if src_sr == TARGET_SR {
+        return mono;
+    }
+
+    // 2. Resample to 16kHz using rubato FftFixedIn
+    let chunk = 1024usize;
+    let mut resampler =
+        FftFixedIn::<f32>::new(src_sr as usize, TARGET_SR as usize, chunk, 2, 1)
+            .expect("resampler init");
+
+    let mut out = Vec::with_capacity(mono.len() * TARGET_SR as usize / src_sr as usize + chunk);
+    let mut pos = 0;
+    while pos + chunk <= mono.len() {
+        let input = vec![mono[pos..pos + chunk].to_vec()];
+        let result = resampler.process(&input, None).expect("resample");
+        out.extend_from_slice(&result[0]);
+        pos += chunk;
+    }
+    // tail
+    if pos < mono.len() {
+        let mut tail = mono[pos..].to_vec();
+        tail.resize(chunk, 0.0);
+        let input = vec![tail];
+        let result = resampler.process(&input, None).expect("resample tail");
+        let expected_tail = (mono.len() - pos) * TARGET_SR as usize / src_sr as usize;
+        out.extend_from_slice(&result[0][..expected_tail.min(result[0].len())]);
+    }
+
+    tracing::info!("Resampled {}Hz→16kHz: {} → {} samples", src_sr, mono.len(), out.len());
+    out
 }
 
 #[tauri::command]
@@ -70,7 +124,7 @@ pub async fn stop_recording(
     let config = state.config.lock().await.clone();
     let app2 = app.clone();
 
-    tokio::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         match crate::transcribe::run(&samples, &config.model_path, &config.language) {
             Ok(text) => {
                 app2.emit("recording-state", "idle").ok();

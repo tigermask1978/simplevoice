@@ -13,7 +13,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             hotkey: "Ctrl+Shift+Space".into(),
-            model_path: "models/ggml-small.bin".into(),
+            model_path: "models/ggml-base.bin".into(),
             language: "zh".into(),
         }
     }
@@ -25,12 +25,34 @@ fn config_path(app: &AppHandle) -> PathBuf {
 
 pub fn load(app: &AppHandle) -> anyhow::Result<Config> {
     let path = config_path(app);
-    if path.exists() {
+    let mut config = if path.exists() {
         let data = std::fs::read_to_string(&path)?;
-        Ok(serde_json::from_str(&data).unwrap_or_default())
+        serde_json::from_str(&data).unwrap_or_default()
     } else {
-        Ok(Config::default())
+        Config::default()
+    };
+
+    // Resolve relative model_path against the project/resource root so it
+    // works in both `tauri dev` (cwd = src-tauri/) and installed builds.
+    if !std::path::Path::new(&config.model_path).is_absolute() {
+        // Walk up from cwd until we find a `models/` directory.
+        let mut dir = std::env::current_dir().unwrap_or_default();
+        loop {
+            let candidate = dir.join(&config.model_path);
+            if candidate.exists() {
+                config.model_path = candidate.to_string_lossy().into_owned();
+                break;
+            }
+            let parent = dir.join("..").canonicalize();
+            match parent {
+                Ok(p) if p != dir => dir = p,
+                _ => break, // give up, keep original relative path
+            }
+        }
     }
+
+    tracing::info!("Model path: {}", config.model_path);
+    Ok(config)
 }
 
 #[tauri::command]
