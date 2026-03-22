@@ -1,0 +1,24 @@
+# Models (large binary files)
+models/
+*.ggml
+*.bin
+
+# Build outputs
+src-tauri/target/
+dist/
+node_modules/
+
+# Tauri generated
+src-tauri/gen/
+
+# Env
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
