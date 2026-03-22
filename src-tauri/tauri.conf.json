@@ -17,15 +17,11 @@
         "height": 560,
         "visible": false,
         "resizable": false,
+        "maximizable": false,
         "decorations": true,
         "center": true
       }
     ],
-    "trayIcon": {
-      "iconPath": "icons/tray.png",
-      "iconAsTemplate": true,
-      "menuOnLeftClick": false
-    },
     "security": {
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'"
     }

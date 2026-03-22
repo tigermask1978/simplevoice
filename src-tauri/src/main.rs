@@ -34,6 +34,22 @@ fn main() {
             app.manage(state);
             tray::setup(app)?;
             hotkey::register(app)?;
+
+            // Hide to tray on close or minimize
+            if let Some(win) = app.get_webview_window("settings") {
+                let win2 = win.clone();
+                win.on_window_event(move |event| match event {
+                    tauri::WindowEvent::CloseRequested { api, .. } => {
+                        api.prevent_close();
+                        win2.hide().ok();
+                    }
+                    tauri::WindowEvent::Resized(size) if size.width == 0 && size.height == 0 => {
+                        win2.hide().ok();
+                    }
+                    _ => {}
+                });
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
