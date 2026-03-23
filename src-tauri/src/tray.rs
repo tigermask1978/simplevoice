@@ -6,7 +6,7 @@ use tauri::{
 
 const ICONS_DIR: &str = env!("CARGO_MANIFEST_DIR");
 
-fn load_icon(name: &str) -> Option<tauri::image::Image<'static>> {
+pub fn load_icon(name: &str) -> Option<tauri::image::Image<'static>> {
     let path = std::path::PathBuf::from(ICONS_DIR).join("icons").join(name);
     std::fs::read(&path)
         .ok()

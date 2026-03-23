@@ -38,6 +38,13 @@ fn main() {
             app.manage(_tray);
             hotkey::register(app)?;
 
+            // Set window icon to tray.png
+            if let Some(win) = app.get_webview_window("settings") {
+                if let Some(icon) = crate::tray::load_icon("tray.png") {
+                    win.set_icon(icon).ok();
+                }
+            }
+
             // Hide to tray on close or minimize
             if let Some(win) = app.get_webview_window("settings") {
                 let win2 = win.clone();

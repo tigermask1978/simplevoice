@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { open } from '@tauri-apps/plugin-dialog'
+import { open, confirm } from '@tauri-apps/plugin-dialog'
 import { useState, useEffect, useCallback } from 'react'
 
 type Config = {
@@ -37,18 +37,29 @@ function eventToHotkey(e: KeyboardEvent): string | null {
 
 export default function Settings() {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG)
+  const [savedConfig, setSavedConfig] = useState<Config>(DEFAULT_CONFIG)
   const [status, setStatus] = useState('')
   const [recording, setRecording] = useState(false)
 
   useEffect(() => {
-    invoke<Config>('get_config').then(setConfig).catch(() => {})
+    invoke<Config>('get_config').then(c => { setConfig(c); setSavedConfig(c) }).catch(() => {})
   }, [])
 
   useEffect(() => {
-    const onBlur = () => (document.activeElement as HTMLElement)?.blur()
+    const onBlur = async () => {
+      (document.activeElement as HTMLElement)?.blur()
+      if (JSON.stringify(config) !== JSON.stringify(savedConfig)) {
+        const yes = await confirm('有未保存的更改，是否立即保存？', { title: 'SimpleVoice', kind: 'info' })
+        if (yes) {
+          await doSave(config)
+        } else {
+          setConfig(savedConfig)
+        }
+      }
+    }
     window.addEventListener('blur', onBlur)
     return () => window.removeEventListener('blur', onBlur)
-  }, [])
+  }, [config, savedConfig])
 
   const handleHotkeyKeyDown = useCallback((e: React.KeyboardEvent) => {
     e.preventDefault()
@@ -56,16 +67,19 @@ export default function Settings() {
     if (hotkey) setConfig(c => ({ ...c, hotkey }))
   }, [])
 
-  async function save() {
+  async function doSave(cfg: Config) {
     try {
-      await invoke('save_config', { config })
-      await invoke('register_hotkey', { hotkey: config.hotkey })
+      await invoke('save_config', { config: cfg })
+      await invoke('register_hotkey', { hotkey: cfg.hotkey })
+      setSavedConfig(cfg)
       setStatus('已保存')
       setTimeout(() => setStatus(''), 2000)
     } catch (e) {
       setStatus(`错误: ${e}`)
     }
   }
+
+  const save = () => doSave(config)
 
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -75,7 +89,7 @@ export default function Settings() {
         <span>全局热键</span>
         <input
           readOnly
-          value={recording ? '请按下组合键…' : config.hotkey}
+          value={config.hotkey}
           onFocus={() => setRecording(true)}
           onBlur={() => setRecording(false)}
           onKeyDown={handleHotkeyKeyDown}
