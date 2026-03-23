@@ -24,6 +24,7 @@ fn main() {
         .init();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             let config = config::load(app.handle())?;
@@ -59,6 +60,7 @@ fn main() {
             config::save_config,
             audio::start_recording,
             audio::stop_recording,
+            hotkey::register_hotkey,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
