@@ -32,7 +32,9 @@ fn main() {
                 recorder: Arc::new(Mutex::new(audio::Recorder::new())),
             };
             app.manage(state);
-            tray::setup(app)?;
+            let _tray = tray::setup(app)?;
+            // Keep tray alive for the app lifetime
+            app.manage(_tray);
             hotkey::register(app)?;
 
             // Hide to tray on close or minimize

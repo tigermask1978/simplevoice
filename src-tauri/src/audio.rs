@@ -109,6 +109,7 @@ pub async fn start_recording(
     app: AppHandle,
 ) -> Result<(), String> {
     state.recorder.lock().await.start().map_err(|e| e.to_string())?;
+    crate::tray::set_recording(&app, true);
     app.emit("recording-state", "recording").ok();
     Ok(())
 }
@@ -119,6 +120,7 @@ pub async fn stop_recording(
     app: AppHandle,
 ) -> Result<(), String> {
     let samples = state.recorder.lock().await.stop();
+    crate::tray::set_recording(&app, false);
     app.emit("recording-state", "transcribing").ok();
 
     let config = state.config.lock().await.clone();
