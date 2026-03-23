@@ -17,6 +17,7 @@ fn labels(lang: &str) -> (&'static str, &'static str, &'static str) {
     match lang {
         "en" => ("SimpleVoice Settings", "Settings", "Quit"),
         "ja" => ("SimpleVoice 設定", "設定", "終了"),
+        "ko" => ("SimpleVoice 설정", "설정", "종료"),
         _    => ("SimpleVoice 设置", "设置", "退出"),
     }
 }

@@ -6,7 +6,7 @@ import { useI18n } from '../i18n'
 type Config = {
   hotkey: string
   model_path: string
-  language: 'zh' | 'en' | 'ja' | 'auto'
+  language: 'zh' | 'en' | 'ja' | 'ko' | 'auto'
 }
 
 const DEFAULT_CONFIG: Config = {
@@ -137,6 +137,7 @@ export default function Settings() {
           <option value="zh">{t.langZh}</option>
           <option value="en">{t.langEn}</option>
           <option value="ja">{t.langJa}</option>
+          <option value="ko">{t.langKo}</option>
           <option value="auto">{t.langAuto}</option>
         </select>
       </label>

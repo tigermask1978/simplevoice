@@ -15,6 +15,7 @@ const translations = {
     langZh: '中文',
     langEn: 'English',
     langJa: '日本語',
+    langKo: '한국어',
     langAuto: '自动检测',
   },
   en: {
@@ -33,6 +34,7 @@ const translations = {
     langZh: '中文',
     langEn: 'English',
     langJa: '日本語',
+    langKo: '한국어',
     langAuto: 'Auto-detect',
   },
   ja: {
@@ -51,14 +53,35 @@ const translations = {
     langZh: '中文',
     langEn: 'English',
     langJa: '日本語',
+    langKo: '한국어',
     langAuto: '自動検出',
+  },
+  ko: {
+    title: 'SimpleVoice 설정',
+    hotkeyLabel: '전역 핫키',
+    hotkeyPlaceholder: '클릭 후 키 조합을 누르세요',
+    hotkeyWarning: '⚠️ 핫키가 반응하지 않으면 다른 프로그램(예: PowerToys, IME)이 동일한 단축키를 사용하고 있는지 확인하세요.',
+    modelLabel: '모델 경로',
+    modelPlaceholder: '모델 파일 선택',
+    browse: '찾아보기',
+    languageLabel: '언어',
+    save: '저장',
+    saved: '저장됨',
+    errorPrefix: '오류: ',
+    unsavedPrompt: '저장하지 않은 변경 사항이 있습니다. 지금 저장하시겠습니까?',
+    langZh: '中文',
+    langEn: 'English',
+    langJa: '日本語',
+    langKo: '한국어',
+    langAuto: '자동 감지',
   },
 } as const
 
-export function useI18n(lang: 'zh' | 'en' | 'ja' | 'auto') {
+export function useI18n(lang: 'zh' | 'en' | 'ja' | 'ko' | 'auto') {
   const resolved = lang === 'auto'
     ? navigator.language.startsWith('zh') ? 'zh'
     : navigator.language.startsWith('ja') ? 'ja'
+    : navigator.language.startsWith('ko') ? 'ko'
     : 'en'
     : lang
   return translations[resolved]
