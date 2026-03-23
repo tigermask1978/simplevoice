@@ -68,6 +68,7 @@ fn main() {
             audio::start_recording,
             audio::stop_recording,
             hotkey::register_hotkey,
+            tray::update_tray_lang,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
