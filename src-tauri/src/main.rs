@@ -9,7 +9,8 @@ mod transcribe;
 mod tray;
 
 use std::sync::Arc;
-use tauri::Manager;
+use std::sync::atomic::{AtomicBool, Ordering};
+use tauri::{Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
 use tokio::sync::Mutex;
 use tracing_subscriber::EnvFilter;
@@ -78,21 +79,22 @@ fn main() {
                 win.show().ok();
             }
 
-            // Hide to tray on close or minimize
+            // Hide to tray on close or minimize — ask frontend to validate first
             if let Some(win) = app.get_webview_window("settings") {
-                let win2 = win.clone();
                 let app2 = app.handle().clone();
+                let minimizing = Arc::new(AtomicBool::new(false));
                 win.on_window_event(move |event| match event {
                     tauri::WindowEvent::CloseRequested { api, .. } => {
                         api.prevent_close();
-                        win2.hide().ok();
-                        let lang = app2.state::<AppState>().config.blocking_lock().language.clone();
-                        notify_here(&app2, &lang);
+                        app2.emit("request-hide", ()).ok();
                     }
                     tauri::WindowEvent::Resized(size) if size.width == 0 && size.height == 0 => {
-                        win2.hide().ok();
-                        let lang = app2.state::<AppState>().config.blocking_lock().language.clone();
-                        notify_here(&app2, &lang);
+                        if !minimizing.swap(true, Ordering::SeqCst) {
+                            app2.emit("request-hide", ()).ok();
+                        }
+                    }
+                    tauri::WindowEvent::Resized(_) => {
+                        minimizing.store(false, Ordering::SeqCst);
                     }
                     _ => {}
                 });
@@ -103,6 +105,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             config::get_config,
             config::save_config,
+            config::validate_model_path,
             audio::start_recording,
             audio::stop_recording,
             hotkey::register_hotkey,

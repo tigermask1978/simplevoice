@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { open, confirm } from '@tauri-apps/plugin-dialog'
-import { useState, useEffect, useCallback } from 'react'
+import { listen } from '@tauri-apps/api/event'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useI18n } from '../i18n'
 
 type Config = {
@@ -41,6 +42,7 @@ export default function Settings() {
   const [status, setStatus] = useState('')
   const [recording, setRecording] = useState(false)
   const t = useI18n(config.language)
+  const hidingRef = useRef(false)
 
   useEffect(() => {
     invoke<Config>('get_config').then(c => {
@@ -51,24 +53,45 @@ export default function Settings() {
   }, [])
 
   useEffect(() => {
-    invoke('update_tray_lang', { lang: config.language }).catch(() => {})
-  }, [config.language])
+    const unlisten = listen('request-hide', async () => {
+      if (hidingRef.current) return
+      hidingRef.current = true
+      try {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window')
+        const win = getCurrentWindow()
+        const valid = await invoke<boolean>('validate_model_path', { path: config.model_path })
+        if (!valid) {
+          await win.unminimize()
+          setStatus(t.invalidModel)
+          return
+        }
+        if (JSON.stringify(config) !== JSON.stringify(savedConfig)) {
+          await win.unminimize()
+          const yes = await confirm(t.unsavedPrompt, { title: 'SimpleVoice', kind: 'info' })
+          if (yes) {
+            await doSave(config)
+            return
+          }
+        }
+        setStatus('')
+        await win.hide()
+        await invoke('show_tray_notification')
+      } finally {
+        // Delay reset so unminimize-triggered Resized(0,0) is still blocked
+        setTimeout(() => { hidingRef.current = false }, 500)
+      }
+    })
+    return () => { unlisten.then(f => f()) }
+  }, [config, savedConfig, t])
 
   useEffect(() => {
-    const onBlur = async () => {
-      (document.activeElement as HTMLElement)?.blur()
-      if (JSON.stringify(config) !== JSON.stringify(savedConfig)) {
-        const yes = await confirm(t.unsavedPrompt, { title: 'SimpleVoice', kind: 'info' })
-        if (yes) {
-          await doSave(config)
-        } else {
-          setConfig(savedConfig)
-        }
-      }
+    const onBlur = () => {
+      if (hidingRef.current) return
+      ;(document.activeElement as HTMLElement)?.blur()
     }
     window.addEventListener('blur', onBlur)
     return () => window.removeEventListener('blur', onBlur)
-  }, [config, savedConfig, t])
+  }, [])
 
   const handleHotkeyKeyDown = useCallback((e: React.KeyboardEvent) => {
     e.preventDefault()
