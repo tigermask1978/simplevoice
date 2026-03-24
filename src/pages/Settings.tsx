@@ -81,11 +81,13 @@ export default function Settings() {
       await invoke('save_config', { config: cfg })
       await invoke('register_hotkey', { hotkey: cfg.hotkey })
       setSavedConfig(cfg)
+      setStatus('')
       const { getCurrentWindow } = await import('@tauri-apps/api/window')
       await getCurrentWindow().hide()
       await invoke('show_tray_notification')
     } catch (e) {
-      setStatus(`${t.errorPrefix}${e}`)
+      const msg = String(e).includes('invalid_model') ? t.invalidModel : `${t.errorPrefix}${e}`
+      setStatus(msg)
     }
   }
 

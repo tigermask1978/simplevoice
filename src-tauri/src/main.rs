@@ -21,13 +21,7 @@ pub struct AppState {
     pub whisper_ctx: Arc<Mutex<Option<(String, WhisperContext)>>>,
 }
 
-fn notify_here(app: &tauri::AppHandle, lang: &str) {
-    let body = match lang {
-        "en" => "I'm here",
-        "ja" => "ここにいます",
-        "ko" => "여기 있어요",
-        _    => "我在这里",
-    };
+fn send_notification(app: &tauri::AppHandle, body: &str) {
     app.notification()
         .builder()
         .title("SimpleVoice")
@@ -35,6 +29,17 @@ fn notify_here(app: &tauri::AppHandle, lang: &str) {
         .show()
         .ok();
 }
+
+pub fn notify_here(app: &tauri::AppHandle, lang: &str) {
+    let body = match lang {
+        "en" => "I'm here",
+        "ja" => "ここにいます",
+        "ko" => "여기 있어요",
+        _    => "我在这里",
+    };
+    send_notification(app, body);
+}
+
 
 #[tauri::command]
 async fn show_tray_notification(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), ()> {

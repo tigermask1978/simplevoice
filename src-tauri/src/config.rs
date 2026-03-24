@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::io::Read;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
@@ -60,12 +61,22 @@ pub async fn get_config(state: tauri::State<'_, crate::AppState>) -> Result<Conf
     Ok(state.config.lock().await.clone())
 }
 
+fn is_valid_whisper_model(path: &str) -> bool {
+    let Ok(mut f) = std::fs::File::open(path) else { return false };
+    let mut magic = [0u8; 4];
+    let Ok(_) = f.read_exact(&mut magic) else { return false };
+    magic == *b"GGUF" || magic == *b"lmgg"
+}
+
 #[tauri::command]
 pub async fn save_config(
     config: Config,
     state: tauri::State<'_, crate::AppState>,
     app: AppHandle,
 ) -> Result<(), String> {
+    if !is_valid_whisper_model(&config.model_path) {
+        return Err("invalid_model".to_string());
+    }
     let path = config_path(&app);
     std::fs::create_dir_all(path.parent().unwrap()).map_err(|e| e.to_string())?;
     std::fs::write(&path, serde_json::to_string_pretty(&config).unwrap())
