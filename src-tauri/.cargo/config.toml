@@ -1,0 +1,12 @@
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+avx,+avx2,+fma,+sse4.1,+sse4.2,+f16c"]
+
+[env]
+GGML_AVX = "ON"
+GGML_AVX2 = "ON"
+GGML_FMA = "ON"
+GGML_OPENMP = "ON"
+WHISPER_NO_AVX = "0"
+WHISPER_NO_AVX2 = "0"
+WHISPER_NO_FMA = "0"
+WHISPER_NO_F16C = "0"

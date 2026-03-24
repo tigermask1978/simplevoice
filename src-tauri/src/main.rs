@@ -12,10 +12,12 @@ use std::sync::Arc;
 use tauri::Manager;
 use tokio::sync::Mutex;
 use tracing_subscriber::EnvFilter;
+use whisper_rs::WhisperContext;
 
 pub struct AppState {
     pub config: Arc<Mutex<config::Config>>,
     pub recorder: Arc<Mutex<audio::Recorder>>,
+    pub whisper_ctx: Arc<Mutex<Option<(String, WhisperContext)>>>,
 }
 
 fn main() {
@@ -31,6 +33,7 @@ fn main() {
             let state = AppState {
                 config: Arc::new(Mutex::new(config)),
                 recorder: Arc::new(Mutex::new(audio::Recorder::new())),
+                whisper_ctx: Arc::new(Mutex::new(None)),
             };
             app.manage(state);
             let _tray = tray::setup(app)?;

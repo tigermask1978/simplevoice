@@ -124,10 +124,11 @@ pub async fn stop_recording(
     app.emit("recording-state", "transcribing").ok();
 
     let config = state.config.lock().await.clone();
+    let ctx_cache = state.whisper_ctx.clone();
     let app2 = app.clone();
 
     tauri::async_runtime::spawn(async move {
-        match crate::transcribe::run(&samples, &config.model_path, &config.language) {
+        match crate::transcribe::run(&samples, &config.model_path, &config.language, ctx_cache).await {
             Ok(text) => {
                 app2.emit("recording-state", "idle").ok();
                 if !text.is_empty() {
