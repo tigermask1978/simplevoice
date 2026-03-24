@@ -63,7 +63,7 @@ pub async fn run(
     };
     params.set_n_threads(n_threads);
     // 加这一行确认线程数是否生效
-    log_time(&format!("n_threads set to: {}", n_threads));
+    // log_time(&format!("n_threads set to: {}", n_threads));
     // 
     params.set_language(Some(if language == "auto" { "auto" } else { language }));
     params.set_print_progress(false);

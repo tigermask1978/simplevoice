@@ -20,6 +20,7 @@ enigo = "0.2"
 whisper-rs = { version = "0.16", features = ["openmp"] }
 anyhow = "1"
 tauri-plugin-dialog = "2.6.0"
+tauri-plugin-notification = "2"
 chrono = "0.4"  
 
 [target.'cfg(target_os = "macos")'.dependencies]
