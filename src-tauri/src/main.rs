@@ -31,21 +31,20 @@ fn send_notification(app: &tauri::AppHandle, body: &str) {
         .ok();
 }
 
-pub fn notify_here(app: &tauri::AppHandle, lang: &str) {
+pub fn notify_here(app: &tauri::AppHandle, lang: &str, hotkey: &str) {
     let body = match lang {
-        "en" => "I'm here",
-        "ja" => "ここにいます",
-        "ko" => "여기 있어요",
-        _    => "我在这里",
+        "en" => format!("I'm here. Hold {} to record, release to transcribe!", hotkey),
+        "ja" => format!("ここにいます。{} を押し続けて録音、離すと文字起こし！", hotkey),
+        "ko" => format!("여기 있어요. {}를 누르고 있으면 녹음, 떼면 전사 시작!", hotkey),
+        _    => format!("我在这里，按住 {} 开始录音，松开开始转录！", hotkey),
     };
-    send_notification(app, body);
+    send_notification(app, &body);
 }
-
 
 #[tauri::command]
 async fn show_tray_notification(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), ()> {
-    let lang = state.config.lock().await.language.clone();
-    notify_here(&app, &lang);
+    let cfg = state.config.lock().await;
+    notify_here(&app, &cfg.language, &cfg.hotkey);
     Ok(())
 }
 
