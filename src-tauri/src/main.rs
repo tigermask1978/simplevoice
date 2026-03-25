@@ -48,6 +48,16 @@ async fn show_tray_notification(app: tauri::AppHandle, state: tauri::State<'_, A
     Ok(())
 }
 
+#[tauri::command]
+async fn open_settings(app: tauri::AppHandle) -> Result<(), ()> {
+    if let Some(win) = app.get_webview_window("settings") {
+        if let Some(icon) = crate::tray::load_icon("tray.png") { win.set_icon(icon).ok(); }
+        win.show().ok();
+        win.set_focus().ok();
+    }
+    Ok(())
+}
+
 fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
@@ -55,6 +65,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
@@ -70,8 +81,10 @@ fn main() {
             app.manage(_tray);
             hotkey::register(app)?;
 
-            // Set window icon and show on startup
-            if let Some(win) = app.get_webview_window("settings") {
+            // Show onboarding on first run, settings otherwise
+            let is_first_run = !config::config_path(app.handle()).exists();
+            let show_label = if is_first_run { "onboarding" } else { "settings" };
+            if let Some(win) = app.get_webview_window(show_label) {
                 if let Some(icon) = crate::tray::load_icon("tray.png") {
                     win.set_icon(icon).ok();
                 }
@@ -110,6 +123,7 @@ fn main() {
             hotkey::register_hotkey,
             tray::update_tray_lang,
             show_tray_notification,
+            open_settings,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

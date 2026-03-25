@@ -14,13 +14,13 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             hotkey: "Ctrl+Shift+Space".into(),
-            model_path: "models/ggml-base.bin".into(),
-            language: "zh".into(),
+            model_path: "".into(),
+            language: "en".into(),
         }
     }
 }
 
-fn config_path(app: &AppHandle) -> PathBuf {
+pub fn config_path(app: &AppHandle) -> PathBuf {
     app.path().app_config_dir().unwrap().join("config.json")
 }
 
@@ -35,7 +35,7 @@ pub fn load(app: &AppHandle) -> anyhow::Result<Config> {
 
     // Resolve relative model_path against the project/resource root so it
     // works in both `tauri dev` (cwd = src-tauri/) and installed builds.
-    if !std::path::Path::new(&config.model_path).is_absolute() {
+    if !config.model_path.is_empty() && !std::path::Path::new(&config.model_path).is_absolute() {
         // Walk up from cwd until we find a `models/` directory.
         let mut dir = std::env::current_dir().unwrap_or_default();
         loop {
@@ -57,11 +57,16 @@ pub fn load(app: &AppHandle) -> anyhow::Result<Config> {
 }
 
 #[tauri::command]
+pub fn validate_model_path(path: String) -> bool {
+    is_valid_whisper_model(&path)
+}
+
+#[tauri::command]
 pub async fn get_config(state: tauri::State<'_, crate::AppState>) -> Result<Config, String> {
     Ok(state.config.lock().await.clone())
 }
 
-fn is_valid_whisper_model(path: &str) -> bool {
+pub fn is_valid_whisper_model(path: &str) -> bool {
     let Ok(mut f) = std::fs::File::open(path) else { return false };
     let mut magic = [0u8; 4];
     let Ok(_) = f.read_exact(&mut magic) else { return false };

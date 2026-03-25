@@ -20,6 +20,17 @@
         "maximizable": false,
         "decorations": true,
         "center": true
+      },
+      {
+        "label": "onboarding",
+        "title": "Welcome to SimpleVoice",
+        "width": 480,
+        "height": 400,
+        "visible": false,
+        "resizable": false,
+        "maximizable": false,
+        "decorations": true,
+        "center": true
       }
     ],
     "security": {

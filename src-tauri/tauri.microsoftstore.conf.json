@@ -1,0 +1,67 @@
+{
+  "productName": "SimpleVoice",
+  "version": "1.0.0",
+  "identifier": "com.wangkai.simplevoice",
+  
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  
+  "app": {
+    "windows": [
+      {
+        "label": "settings",
+        "title": "SimpleVoice 设置",
+        "width": 480,
+        "height": 560,
+        "visible": false,
+        "resizable": false,
+        "maximizable": false,
+        "decorations": true,
+        "center": true
+      },
+      {
+        "label": "onboarding",
+        "title": "Welcome to SimpleVoice",
+        "width": 480,
+        "height": 400,
+        "visible": false,
+        "resizable": false,
+        "maximizable": false,
+        "decorations": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  
+  
+  "bundle": {
+    "active": true,   
+    "targets": ["msi"], 
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [
+      
+    ],
+    "publisher": "CN=WangKai",
+    "shortDescription": "Local real-time voice input tool with global hotkey + Whisper offline transcription. Supports Chinese, English, Japanese & Korean. Fully private, no internet required.",
+    "longDescription": "SimpleVoice is a lightweight, completely local voice input application. Press a global hotkey to start recording — Whisper transcribes your speech instantly on your device and automatically inserts the text at the cursor position.\n\n✅ Fully offline with Whisper models\n✅ Global hotkey (customizable)\n✅ Supports Chinese, English, Japanese, Korean\n✅ Privacy-first: nothing leaves your computer\n✅ No cloud, no telemetry, no data collection\n\nPerfect for writers, developers, office workers, and anyone who wants fast, accurate, and private voice typing.",
+    "category": "Utilities",
+
+    "windows": {
+      "webviewInstallMode": {
+        "type": "offlineInstaller"
+      }
+    }
+  }
+}
