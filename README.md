@@ -1,6 +1,8 @@
-# SimpleVoice
+# SimpleVoice - Free Speech Recognition Tool
 
-> 按下快捷键，说话，松开——文字自动出现在光标处。
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/tigermask1978/simplevoice.svg)](https://github.com/tigermask1978/simplevoice/stargazers)
+
 
 A privacy-first, cross-platform desktop voice input tool. Press a global hotkey, speak, release — transcribed text is injected at your cursor. Everything runs locally via [whisper.cpp](https://github.com/ggerganov/whisper.cpp); no cloud, no telemetry, no audio stored to disk.
 
@@ -14,6 +16,14 @@ A privacy-first, cross-platform desktop voice input tool. Press a global hotkey,
 - **Multi-language** — Chinese, English, Japanese, Korean, or auto-detect
 - **System tray** — runs in background, tray icon shows recording state
 - **First-run onboarding** — guides you through model download on first launch
+
+## 📷 Screenshots
+
+![settings](settings.png)
+![settings-en](settings-en.png)
+![settings-jp](settings-jp.png)
+![settings-ko](settings-ko.png)
+
 
 ## Prerequisites
 
@@ -98,3 +108,16 @@ SimpleVoice is designed to be fully offline:
 - Audio is processed in memory and discarded immediately
 - No usage data or telemetry collected
 - Config stored locally at `~/.config/simple-voice/config.json`
+
+
+## ❤️ Support the Developer
+
+If **SimpleVoice** has helped you, please consider making a **voluntary donation**.  
+Your support helps me maintain the project, improve the models, and add new features.
+
+**Donate via PayPal:**
+
+[💰 Donate with PayPal](https://www.paypal.com/paypalme/tigermask1978)
+
+Even a small donation is greatly appreciated!  
+⭐ Starring the repository also helps a lot.
