@@ -17,6 +17,7 @@ A privacy-first, cross-platform desktop voice input tool. Press a global hotkey,
 - **Multi-language** — Chinese, English, Japanese, Korean, or auto-detect
 - **System tray** — runs in background, tray icon shows recording state
 - **First-run onboarding** — guides you through model download on first launch
+- **Internationalization (i18n) support** — Supports multiple languages and localized interface
 
 ## 📷 Screenshots
 
