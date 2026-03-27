@@ -10,6 +10,7 @@ A privacy-first, cross-platform desktop voice input tool. Press a global hotkey,
 
 ## Features
 
+- **CPU-only inference** — No GPU required, runs on most computers
 - **Global hotkey** — hold to record, release to transcribe and inject
 - **Local transcription** — whisper.cpp runs entirely on your machine
 - **Text injection** — types result at cursor in any application
