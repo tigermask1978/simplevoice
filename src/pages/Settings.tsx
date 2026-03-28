@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { open, confirm } from '@tauri-apps/plugin-dialog'
+import { open as openUrl } from '@tauri-apps/plugin-shell'
+import paypalIcon from '../assets/paypal.png'
 import { listen } from '@tauri-apps/api/event'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useI18n } from '../i18n'
@@ -177,6 +179,18 @@ export default function Settings() {
 
       <button onClick={save} style={btnStyle}>{t.save}</button>
       {status && <span style={{ color: status.startsWith(t.errorPrefix) ? '#f87171' : '#4ade80' }}>{status}</span>}
+
+      <div style={{ marginTop: 'auto', paddingTop: 12, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, borderTop: '1px solid #333' }}>
+        <span style={{ fontSize: 12, color: '#888' }}>{t.supportDev}:</span>
+        <img
+          src={paypalIcon}
+          alt="PayPal"
+          onClick={() => openUrl('https://www.paypal.com/paypalme/tigermask1978')}
+          style={{ height: 28, cursor: 'pointer', opacity: 0.85 }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+        />
+      </div>
     </div>
   )
 }

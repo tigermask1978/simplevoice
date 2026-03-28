@@ -18,6 +18,7 @@ const translations = {
     langJa: '日本語',
     langKo: '한국어',
     langAuto: '自动检测',
+    supportDev: '支持开发者',
   },
   en: {
     title: 'SimpleVoice Settings',
@@ -38,6 +39,7 @@ const translations = {
     langJa: '日本語',
     langKo: '한국어',
     langAuto: 'Auto-detect',
+    supportDev: 'Support the Developer',
   },
   ja: {
     title: 'SimpleVoice 設定',
@@ -58,6 +60,7 @@ const translations = {
     langJa: '日本語',
     langKo: '한국어',
     langAuto: '自動検出',
+    supportDev: '開発者を支援',
   },
   ko: {
     title: 'SimpleVoice 설정',
@@ -78,6 +81,7 @@ const translations = {
     langJa: '日本語',
     langKo: '한국어',
     langAuto: '자동 감지',
+    supportDev: '개발자 후원',
   },
 } as const
 
