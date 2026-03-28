@@ -126,7 +126,7 @@ export default function Settings() {
   const save = () => doSave(config)
 
   return (
-    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, minHeight: '100vh', boxSizing: 'border-box' }}>
       <h2 style={{ fontSize: 18, fontWeight: 600 }}>{t.title}</h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
