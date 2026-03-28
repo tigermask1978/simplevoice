@@ -45,6 +45,12 @@ export default function Settings() {
   const hidingRef = useRef(false)
 
   useEffect(() => {
+    import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+      getCurrentWindow().setTitle(t.title).catch(() => {})
+    })
+  }, [t.title])
+
+  useEffect(() => {
     invoke<Config>('get_config').then(c => {
       setConfig(c)
       setSavedConfig(c)
