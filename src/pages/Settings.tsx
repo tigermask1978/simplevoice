@@ -109,6 +109,7 @@ export default function Settings() {
     try {
       await invoke('save_config', { config: cfg })
       await invoke('register_hotkey', { hotkey: cfg.hotkey })
+      invoke('update_tray_lang', { lang: cfg.language }).catch(() => {})
       setSavedConfig(cfg)
       setStatus('')
       const { getCurrentWindow } = await import('@tauri-apps/api/window')
